@@ -22,8 +22,20 @@ class Database:
             ''')
 
     def read_tab_cart(self):
+        data_cartridges = []
         cur = self.conn.execute('SELECT * FROM cartridges')
-        return cur.fetchall()
+        rows = cur.fetchall()
+        for row in rows:
+            tmp = {
+                'id': row['id'],
+                'model_code': row['model_code'],
+                'color_name': row['color_name'],
+                'quantity': row['quantity'],
+                'printer_model': row['printer_model']
+            }
+            data_cartridges.append(tmp)
+
+        return data_cartridges
 
     def add_data(self, cartridge_data):
         with self.conn:
