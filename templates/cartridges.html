@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учёт картриджей</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Flash-сообщения -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="flash-messages flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    <script>
+      setTimeout(() => {
+        const el = document.querySelector('.flash-messages');
+        if (el) {
+          el.style.opacity = '0';
+          setTimeout(() => el.remove(), 300);
+        }
+      }, 3000);
+    </script>
+  {% endif %}
+{% endwith %}
+
+<!-- Меню в правом верхнем углу -->
+<div class="top-nav">
+    <a href="/" title="На главную">🖨️ Меню</a>
+    <a href="/export" title="На главную">Excel</a>
+</div>
+
+<!-- Сетка блоков принтеров -->
+<div class="printers-grid">
+    {% if grouped_cartridges %}
+        {% for printer_model, cartridges in grouped_cartridges.items() %}
+        <div class="printer-block">
+            <h3 class="printer-title">{{ printer_model }}</h3>
+            <table class="cartridge-table">
+                <thead>
+                    <tr>
+                        <th>Цвет</th>
+                        <th>Модель</th>
+                        <th>Кол-во</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in cartridges %}
+                    <tr>
+                        <td>{{ c.color_name|capitalize }}</td>
+                        <td>{{ c.model_code or '—' }}</td>
+                        <td>
+                            {{ (c.quantity or 0) }}
+                            <!-- Кнопка списания -1 -->
+                            <form method="POST" action="{{ url_for('cartridges_page') }}" style="display:inline;">
+                                <input type="hidden" name="id" value="{{ c.id }}">
+                                <input type="hidden" name="action" value="decrement">
+                                <button type="submit" class="btn-dec"
+                                        {% if (c.quantity or 0) <= 0 %}disabled{% endif %}
+                                        title="Списать 1 шт.">−</button>
+                            </form>
+                        </td>
+                        <td>
+                            <!-- Кнопка редактирования -->
+                            <a href="{{ url_for('edit_cartridge', cartridge_id=c.id) }}"
+                               class="btn-edit" title="Редактировать">✏️</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <h2>Нет данных</h2>
+            <p>Добавьте информацию о принтерах и картриджах.</p>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
