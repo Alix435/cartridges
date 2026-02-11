@@ -1,9 +1,11 @@
 import sqlite3
-from config import db_path
+import pandas
+import config
+
 
 class Database:
     def __init__(self):
-        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        self.conn = sqlite3.connect(config.db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self._create_tables()
 
@@ -15,7 +17,7 @@ class Database:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             model_code TEXT,
             color_name TEXT NOT NULL CHECK(color_name IN ('black', 'cyan', 'magenta', 'yellow')),
-            quantity INTEGER DEFAULT NULL,
+            quantity INTEGER DEFAULT 0,
             printer_model TEXT NOT NULL,
             UNIQUE(printer_model, color_name)  -- ← КЛЮЧЕВОЕ: запрет дублей по модели+цвету
     )
@@ -50,12 +52,29 @@ class Database:
         self.conn.commit()
 
     def update_cartridges(self, id_cartridge, data):
-        self.conn.execute('''
-            UPDATE cartridges
-            SET quantity = ?
-            WHERE id = ?
-        ''', (data['quantity'], id_cartridge))
+        # Формируем SET часть динамически
+        fields = []
+        values = []
+        for key, value in data.items():
+            if key in ('model_code', 'color_name', 'quantity'):  # разрешённые поля
+                fields.append(f"{key} = ?")
+                values.append(value)
+
+        if not fields:
+            return  # нечего обновлять
+
+        values.append(id_cartridge)
+        query = f"UPDATE cartridges SET {', '.join(fields)} WHERE id = ?"
+        self.conn.execute(query, values)
         self.conn.commit()
+
+    def export_cartridges_data(self):
+        query = 'SELECT * FROM cartridges'
+        data = pandas.read_sql(query, f'sqlite:///{config.db_path}')
+
+        data.to_excel(config.export_file, index=False, sheet_name='Cartridges')
+        print('Done!')
 
     def close(self):
         self.conn.close()
+
