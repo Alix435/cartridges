@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Карточка нового пользователя</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="top-nav">
+        <a href="/">На главную</a>
+        <a href="/cartridge">Картриджи</a>
+        <a href="/act">Акт</a>
+    </div>
+    <div class="center-block">
+        <h1>Карточка нового пользователя</h1>
+    </div>
+    <form>
+        <!-- Текстовое поле -->
+        <div class="form-group">
+            <label for="name">ФИО:</label>
+            <input type="text" id="name" name="name" placeholder="Введите имя">
+        </div>
+        <div class="form-group">
+            <label for="login">Логин:</label>
+            <input type="text" id="login" name="login" placeholder="Введите логин">
+        </div>
+        <!-- Пароль -->
+        <div class="form-group">
+            <label for="password">Пароль шифрования:</label>
+            <input type="text" id="password" name="password">
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="example@mail.ru">
+        </div>
+        <!-- Число -->
+        <div class="form-group">
+            <label for="phone">Телефон: +</label>
+            <input type="number" id="phone" name="phone" min="1000" max="9999">
+        </div>
+
+        <!-- Кнопка отправки -->
+        <button type="submit">Отправить</button>
+    </form>
+</body>
+</html>
